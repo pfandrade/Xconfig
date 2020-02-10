@@ -8,3 +8,4 @@ But this means, opening the terminal, cd'ing to your project's folder, rememberi
 
 Xconfig is simple Mac app to display build settings for the currently open Xcode projects. 
 
+![Screenshot](screenshot.png)
