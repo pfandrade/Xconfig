@@ -288,6 +288,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Build Settings/Build_Settings.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 32HNEEH56A;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "Build Settings/Info.plist";
@@ -296,6 +297,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.outercorner.Build-Settings";
 				PRODUCT_NAME = Xconfig;
 				SWIFT_OBJC_BRIDGING_HEADER = "Build Settings/Build Settings-Bridging-Header.h";
@@ -312,6 +314,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Build Settings/Build_Settings.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 32HNEEH56A;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "Build Settings/Info.plist";
@@ -320,6 +323,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.outercorner.Build-Settings";
 				PRODUCT_NAME = Xconfig;
 				SWIFT_OBJC_BRIDGING_HEADER = "Build Settings/Build Settings-Bridging-Header.h";

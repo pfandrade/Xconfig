@@ -42,14 +42,19 @@ class ViewController: NSViewController {
         }
     }
     
+    var windowController: WindowController? {
+        return self.view.window?.windowController as? WindowController
+    }
+    
     override func viewWillAppear() {
         super.viewWillAppear()
         setupPopUp()
     }
     
     @objc func reload(_ sender: Any?) {
+        windowController?.busy = true
         XcodeBridge.reloadBuildSettings { (results, error) in
-            
+            self.windowController?.busy = false
             guard let results = results else {
                 NSAlert(error: error!).runModal()
                 return
@@ -99,9 +104,7 @@ class ViewController: NSViewController {
             return
         }
         
-        self.settingsController.content = selectedConfig.buildSettings.map { BuildSetting(name: $0.key, value: $0.value)
-        }
-        
+        self.settingsController.content = selectedConfig.buildSettings.map { BuildSetting(name: $0.key, value: $0.value) }
     }
 }
 
@@ -130,7 +133,7 @@ class ViewController: NSViewController {
             }
             current = el
         }
-        return pathNames.joined(separator: " > ")
+        return pathNames.reversed().joined(separator: " > ")
     }
     
 }

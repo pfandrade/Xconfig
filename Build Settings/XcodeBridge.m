@@ -61,13 +61,16 @@ NSString *const XcodeBridgeErrorDomain = @"com.outercorner.XcodeBridge.ErrorDoma
             XCDProject *project = [XCDProject new];
             project.name = sbProject.name;
             NSMutableArray<XCDTarget *> *targets = [[NSMutableArray alloc] init];
+            NSLog(@"Parsing project %@", project.name);
             [[sbProject targets] enumerateObjectsUsingBlock:^(XcodeTarget * _Nonnull sbTarget, NSUInteger idx, BOOL * _Nonnull stop) {
                 XCDTarget *target = [XCDTarget new];
                 target.name = sbTarget.name;
+                NSLog(@"Parsing target %@", target.name);
                 NSMutableArray<XCDConfiguration *> *configurations = [[NSMutableArray alloc] init];
                 [[sbTarget buildConfigurations] enumerateObjectsUsingBlock:^(XcodeBuildConfiguration * _Nonnull sbConfig, NSUInteger idx, BOOL * _Nonnull stop) {
                     XCDConfiguration *configuration = [XCDConfiguration new];
                     configuration.name = sbConfig.name;
+                    NSLog(@"Parsing configuration %@", configuration.name);
                     // Using arrayByApplyingSelector: is much faster than iterating the build settings
                     NSArray<NSString *> *settingNames = [[sbConfig resolvedBuildSettings] arrayByApplyingSelector:@selector(name)];
                     NSArray<NSString *> *settingValues = [[sbConfig resolvedBuildSettings] arrayByApplyingSelector:@selector(value)];

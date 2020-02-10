@@ -8,12 +8,7 @@
 
 import Cocoa
 
-class WindowController: NSWindowController, NSTextFieldDelegate {
-
-    deinit {
-        NSLog("Close")
-    }
-    
+class WindowController: NSWindowController, NSTextFieldDelegate {    
     
     var viewController: ViewController? {
         return self.window?.contentViewController as? ViewController
@@ -24,6 +19,7 @@ class WindowController: NSWindowController, NSTextFieldDelegate {
     func controlTextDidChange(_ obj: Notification) {
         viewController?.searchString = searchField.stringValue
     }
-    
 
+    
+    @objc dynamic var busy: Bool = false
 }

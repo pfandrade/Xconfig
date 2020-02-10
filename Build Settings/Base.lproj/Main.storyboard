@@ -362,7 +362,7 @@
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
                     </connections>
                 </application>
-                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Build_Settings" customModuleProvider="target"/>
+                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Xconfig" customModuleProvider="target"/>
                 <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -371,7 +371,7 @@
         <!--Window Controller-->
         <scene sceneID="R2V-B0-nI4">
             <objects>
-                <windowController storyboardIdentifier="MainWindowController" id="B8D-0N-5wS" customClass="WindowController" customModule="Build_Settings" customModuleProvider="target" sceneMemberID="viewController">
+                <windowController storyboardIdentifier="MainWindowController" id="B8D-0N-5wS" customClass="WindowController" customModule="Xconfig" customModuleProvider="target" sceneMemberID="viewController">
                     <window key="window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" visibleAtLaunch="NO" animationBehavior="default" titleVisibility="hidden" id="IQv-IB-iLA">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
@@ -430,10 +430,21 @@
                                         </popUpButtonCell>
                                     </popUpButton>
                                 </toolbarItem>
+                                <toolbarItem implicitItemIdentifier="C7761E43-2CF0-4AAA-BFC5-A5D81AC4FEBC" label="Custom View" paletteLabel="Custom View" tag="-1" sizingBehavior="auto" id="kqn-fi-TAb">
+                                    <nil key="toolTip"/>
+                                    <progressIndicator key="view" wantsLayer="YES" maxValue="100" displayedWhenStopped="NO" indeterminate="YES" controlSize="small" style="spinning" id="mt5-hi-JX4">
+                                        <rect key="frame" x="30" y="14" width="16" height="16"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <connections>
+                                            <binding destination="B8D-0N-5wS" name="animate" keyPath="busy" id="QeI-d5-eEG"/>
+                                        </connections>
+                                    </progressIndicator>
+                                </toolbarItem>
                             </allowedToolbarItems>
                             <defaultToolbarItems>
                                 <toolbarItem reference="fuX-o0-LYo"/>
                                 <toolbarItem reference="E2k-Xs-g2z"/>
+                                <toolbarItem reference="kqn-fi-TAb"/>
                                 <toolbarItem reference="sJk-5J-qEP"/>
                                 <toolbarItem reference="Ilp-j1-wUr"/>
                             </defaultToolbarItems>
@@ -454,19 +465,19 @@
         <!--View Controller-->
         <scene sceneID="hIz-AP-VOD">
             <objects>
-                <viewController id="XfG-lQ-9wD" customClass="ViewController" customModule="Build_Settings" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="XfG-lQ-9wD" customClass="ViewController" customModule="Xconfig" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" misplaced="YES" id="m2S-Jp-Qdl">
                         <rect key="frame" x="0.0" y="0.0" width="482" height="232"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView placeholderIntrinsicWidth="482" placeholderIntrinsicHeight="282" autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="AnM-mU-39b">
-                                <rect key="frame" x="0.0" y="0.0" width="482" height="232"/>
+                                <rect key="frame" x="0.0" y="0.0" width="482" height="82"/>
                                 <clipView key="contentView" id="5gs-6P-xNO">
-                                    <rect key="frame" x="1" y="0.0" width="480" height="231"/>
+                                    <rect key="frame" x="1" y="0.0" width="480" height="81"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" autosaveColumns="NO" rowSizeStyle="automatic" headerView="X3E-i8-nLb" viewBased="YES" id="tMa-Rs-oip">
-                                            <rect key="frame" x="0.0" y="0.0" width="480" height="206"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="480" height="56"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <size key="intercellSpacing" width="3" height="2"/>
                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -475,7 +486,7 @@
                                             <tableColumns>
                                                 <tableColumn editable="NO" width="118" minWidth="40" maxWidth="1000" id="tdK-xm-3qt">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Name">
-                                                        <font key="font" metaFont="menu" size="11"/>
+                                                        <font key="font" metaFont="message" size="11"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
@@ -519,7 +530,7 @@
                                                 </tableColumn>
                                                 <tableColumn editable="NO" width="356" minWidth="40" maxWidth="1000" id="bIK-dc-Ugi">
                                                     <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Value">
-                                                        <font key="font" metaFont="menu" size="11"/>
+                                                        <font key="font" metaFont="message" size="11"/>
                                                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                                                     </tableHeaderCell>
