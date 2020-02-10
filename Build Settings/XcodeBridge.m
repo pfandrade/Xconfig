@@ -14,18 +14,24 @@
 NSString *const XcodeBridgeErrorDomain = @"com.outercorner.XcodeBridge.ErrorDomain";
 
 @interface XCDConfiguration ()
+- (instancetype)initWithXcodeBuildConfiguration:(XcodeBuildConfiguration *)configuration;
+@property (nonatomic, strong) XcodeBuildConfiguration *configuration;
 @property (nonatomic, strong, readwrite) NSString *name;
 @property (nonatomic, strong, readwrite) NSDictionary<NSString *, NSString *> *buildSettings;
 @property (nonatomic, weak, readwrite) XCDTarget *target;
 @end
 
 @interface XCDTarget ()
+- (instancetype)initWithXcodeTarget:(XcodeTarget *)target;
+@property (nonatomic, strong) XcodeTarget *target;
 @property (nonatomic, strong, readwrite) NSString *name;
 @property (nonatomic, strong, readwrite) NSArray<XCDConfiguration *> *configurations;
 @property (nonatomic, weak, readwrite) XCDProject *project;
 @end
 
 @interface XCDProject ()
+- (instancetype)initWithXcodeProject:(XcodeProject *)project;
+@property (nonatomic, strong) XcodeProject *project;
 @property (nonatomic, strong, readwrite) NSString *name;
 @property (nonatomic, strong, readwrite) NSArray<XCDTarget *> *targets;
 @end
@@ -33,7 +39,7 @@ NSString *const XcodeBridgeErrorDomain = @"com.outercorner.XcodeBridge.ErrorDoma
 
 @implementation XcodeBridge
 
-+ (void)reloadBuildSettings:(void(^)(NSArray<XCDProject *> * _Nullable, NSError * _Nullable))completionBlock
++ (void)reloadAvailableTargets:(void(^)(NSArray<XCDProject *> * _Nullable, NSError * _Nullable))completionBlock
 {
     XcodeApplication *xcode = [SBApplication applicationWithBundleIdentifier:XCODE_BUNDLE_ID];
     
@@ -55,34 +61,16 @@ NSString *const XcodeBridgeErrorDomain = @"com.outercorner.XcodeBridge.ErrorDoma
         }];
         
         
+        
         NSMutableArray<XCDProject *> *projects = [[NSMutableArray alloc] init];
         
         [sbProjects enumerateObjectsUsingBlock:^(XcodeProject * _Nonnull sbProject, NSUInteger idx, BOOL * _Nonnull stop) {
-            XCDProject *project = [XCDProject new];
+            XCDProject *project = [[XCDProject alloc] initWithXcodeProject:sbProject];
             project.name = sbProject.name;
             NSMutableArray<XCDTarget *> *targets = [[NSMutableArray alloc] init];
-            NSLog(@"Parsing project %@", project.name);
             [[sbProject targets] enumerateObjectsUsingBlock:^(XcodeTarget * _Nonnull sbTarget, NSUInteger idx, BOOL * _Nonnull stop) {
-                XCDTarget *target = [XCDTarget new];
+                XCDTarget *target = [[XCDTarget alloc] initWithXcodeTarget:sbTarget];
                 target.name = sbTarget.name;
-                NSLog(@"Parsing target %@", target.name);
-                NSMutableArray<XCDConfiguration *> *configurations = [[NSMutableArray alloc] init];
-                [[sbTarget buildConfigurations] enumerateObjectsUsingBlock:^(XcodeBuildConfiguration * _Nonnull sbConfig, NSUInteger idx, BOOL * _Nonnull stop) {
-                    XCDConfiguration *configuration = [XCDConfiguration new];
-                    configuration.name = sbConfig.name;
-                    NSLog(@"Parsing configuration %@", configuration.name);
-                    // Using arrayByApplyingSelector: is much faster than iterating the build settings
-                    NSArray<NSString *> *settingNames = [[sbConfig resolvedBuildSettings] arrayByApplyingSelector:@selector(name)];
-                    NSArray<NSString *> *settingValues = [[sbConfig resolvedBuildSettings] arrayByApplyingSelector:@selector(value)];
-                    NSMutableDictionary *buildSettings = [NSMutableDictionary dictionary];
-                    for (NSUInteger i = 0; i<settingNames.count; i++) {
-                        [buildSettings setValue:settingValues[i] forKey:settingNames[i]];
-                    }
-                    configuration.buildSettings = buildSettings;
-                    configuration.target = target;
-                    [configurations addObject:configuration];
-                }];
-                target.configurations = configurations;
                 target.project = project;
                 [targets addObject:target];
             }];
@@ -113,8 +101,88 @@ NSString *const XcodeBridgeErrorDomain = @"com.outercorner.XcodeBridge.ErrorDoma
 @end
 
 
+@implementation XCDConfiguration
+
+- (instancetype)initWithXcodeBuildConfiguration:(XcodeBuildConfiguration *)configuration
+{
+    self = [super init];
+    if (self) {
+        _configuration = configuration;
+    }
+    return self;
+}
+
+- (void)updateBuildSettings:(void(^)(NSDictionary<NSString *, NSString *> *))completionBlock
+{
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        dispatch_group_t group = dispatch_group_create();
+        
+        __block NSArray<NSString *> *settingNames = nil;
+        __block NSArray<NSString *> *settingValues = nil;
+        dispatch_group_async(group, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+            settingNames = [[self.configuration resolvedBuildSettings] arrayByApplyingSelector:@selector(name)];
+        });
+        dispatch_group_async(group, dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+            settingValues = [[self.configuration resolvedBuildSettings] arrayByApplyingSelector:@selector(value)];
+        });
+        
+        dispatch_group_notify(group, dispatch_get_main_queue(), ^{
+            NSMutableDictionary *buildSettings = [NSMutableDictionary dictionary];
+            for (NSUInteger i = 0; i<settingNames.count; i++) {
+                [buildSettings setValue:settingValues[i] forKey:settingNames[i]];
+            }
+            self.buildSettings = buildSettings;
+            completionBlock(buildSettings);
+        });
+        
+    });
+}
+
+@end
+@implementation XCDTarget
+- (instancetype)initWithXcodeTarget:(XcodeTarget *)target
+{
+    self = [super init];
+    if (self) {
+        _target = target;
+    }
+    return self;
+}
+
+- (void)updateConfigurations:(void (^)(NSArray<XCDConfiguration *> * _Nonnull))completionBlock
+{
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+        
+        NSArray<XcodeBuildConfiguration *> *buildConfigs = [self.target buildConfigurations];
+        NSMutableArray<XCDConfiguration *> *configurations = [[NSMutableArray alloc] init];
+        
+        [buildConfigs enumerateObjectsUsingBlock:^(XcodeBuildConfiguration * _Nonnull sbConfig, NSUInteger idx, BOOL * _Nonnull stop) {
+            XCDConfiguration *configuration = [[XCDConfiguration alloc] initWithXcodeBuildConfiguration:sbConfig];
+            configuration.name = sbConfig.name;
+            configuration.target = self;
+            [configurations addObject:configuration];
+        }];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.configurations = configurations;
+            completionBlock(configurations);
+        });
+    });
+    
+}
+
+@end
+
+@implementation XCDProject
+- (instancetype)initWithXcodeProject:(XcodeProject *)project
+{
+    self = [super init];
+    if (self) {
+        _project = project;
+    }
+    return self;
+}
+@end
 
 
-@implementation XCDConfiguration @end
-@implementation XCDTarget @end
-@implementation XCDProject @end
+

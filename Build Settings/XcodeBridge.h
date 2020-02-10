@@ -19,7 +19,7 @@ typedef NS_ERROR_ENUM(XcodeBridgeErrorDomain, XcodeBridgeError) {
 
 @interface XcodeBridge : NSObject
 
-+ (void)reloadBuildSettings:(void(^)(NSArray<XCDProject *> * _Nullable, NSError * _Nullable))completionBlock;
++ (void)reloadAvailableTargets:(void(^)(NSArray<XCDProject *> * _Nullable, NSError * _Nullable))completionBlock;
 
 @end
 
@@ -32,17 +32,18 @@ typedef NS_ERROR_ENUM(XcodeBridgeErrorDomain, XcodeBridgeError) {
 @interface XCDConfiguration: NSObject
 
 @property (nonatomic, strong, readonly) NSString *name;
-@property (nonatomic, strong, readonly) NSDictionary<NSString *, NSString *> *buildSettings;
+@property (nonatomic, strong, nullable, readonly) NSDictionary<NSString *, NSString *> *buildSettings;
 @property (nonatomic, weak, readonly) XCDTarget *target;
-
+- (void)updateBuildSettings:(void(^)(NSDictionary<NSString *, NSString *> *))completionBlock;
 @end
 
 @interface XCDTarget: NSObject
 
 @property (nonatomic, strong, readonly) NSString *name;
-@property (nonatomic, strong, readonly) NSArray<XCDConfiguration *> *configurations;
+@property (nonatomic, strong, nullable, readonly) NSArray<XCDConfiguration *> *configurations;
 @property (nonatomic, weak, readonly) XCDProject *project;
 
+- (void)updateConfigurations:(void(^)(NSArray<XCDConfiguration *> *))completionBlock;
 @end
 
 @interface XCDProject: NSObject

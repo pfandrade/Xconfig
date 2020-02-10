@@ -10,6 +10,7 @@ import Cocoa
 
 class WindowController: NSWindowController, NSTextFieldDelegate {    
     
+
     var viewController: ViewController? {
         return self.window?.contentViewController as? ViewController
     }

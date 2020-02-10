@@ -26,10 +26,6 @@ class BuildSetting: NSObject {
 
 class ViewController: NSViewController {
     
-    var projects: [XCDProject] = []
-    
-    @IBOutlet var selectionController: NSArrayController!
-    @IBOutlet var settingsController: NSArrayController!
     var configurationPopUp: NSPopUpButton!
     
     var searchString: String? {
@@ -51,27 +47,32 @@ class ViewController: NSViewController {
         setupPopUp()
     }
     
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        reload(self)
+    }
+    
     @objc func reload(_ sender: Any?) {
         windowController?.busy = true
-        XcodeBridge.reloadBuildSettings { (results, error) in
+        XcodeBridge.reloadAvailableTargets { (results, error) in
             self.windowController?.busy = false
             guard let results = results else {
                 NSAlert(error: error!).runModal()
                 return
             }
-            self.projects = results
             
-            let configurations = results.flatMap { $0.targets }.flatMap { $0.configurations }
-            self.selectionController.content = configurations.map { ItemWrapper(item: $0, includeProjects: results.count > 1) }
+            let targets = results.flatMap { $0.targets }
+            self.targetSelectionController.content = targets.map { ItemWrapper(item: $0, includeProjects: results.count > 1) }
             
-            if let selectedConfig = configurations.first {
-                self.selectionController.setSelectionIndex(0)
-                self.settingsController.content = selectedConfig.buildSettings.map { BuildSetting(name: $0.key, value: $0.value)
-                }
+            if let target = targets.first {
+                self.selectedTarget = target
+                self.targetSelectionController.setSelectionIndex(0)
+                
             }
         }
     }
     
+    // MARK: Actions
     @objc func copy(_ sender: Any?) {
         let text = self.settingsController.selectedObjects
             .compactMap { $0 as? BuildSetting }
@@ -82,12 +83,14 @@ class ViewController: NSViewController {
         NSPasteboard.general.setString(text, forType: .string)
     }
     
-    // MARK: Configuration PopUp management
+    // MARK: Target selection
+    
+    @IBOutlet var targetSelectionController: NSArrayController!
     func setupPopUp() {
         let toolbarPopUp = self.view.window?.toolbar?.items
             .filter { $0.itemIdentifier == .init(rawValue: "ConfigurationPopUp")}
             .first?.view as? NSPopUpButton
-        guard let popUp = toolbarPopUp, let controller = selectionController else {
+        guard let popUp = toolbarPopUp, let controller = targetSelectionController else {
             return
         }
         
@@ -99,13 +102,53 @@ class ViewController: NSViewController {
     }
     
     @objc func popUpDidChange(_ sender: Any?) {
-        guard let wrapper = selectionController.selectedObjects.first as? ItemWrapper,
-            let selectedConfig = wrapper.item as? XCDConfiguration else {
+        guard let wrapper = targetSelectionController.selectedObjects.first as? ItemWrapper else {
             return
         }
-        
-        self.settingsController.content = selectedConfig.buildSettings.map { BuildSetting(name: $0.key, value: $0.value) }
+        selectedTarget = wrapper.item as? XCDTarget
     }
+    
+    var selectedTarget: XCDTarget? {
+        didSet {
+            self.configurationsController.content = selectedTarget?.configurations ?? []
+            self.selectedConfiguration = (self.configurationsController.selectedObjects.first as? ItemWrapper)?.item as? XCDConfiguration
+            if let target = selectedTarget, target.configurations == nil {
+                target.updateConfigurations { (configs) in
+                    if target == self.selectedTarget {
+                        self.configurationsController.content = configs.map { ItemWrapper(item: $0, includeProjects: false) }
+                        self.selectedConfiguration = (self.configurationsController.selectedObjects.first as? ItemWrapper)?.item as? XCDConfiguration
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: Configuration selection
+    @IBOutlet var configurationsController: NSArrayController!
+    var selectedConfiguration: XCDConfiguration? {
+        didSet {
+            settingsController.content = (selectedConfiguration?.buildSettings ?? [:]).map { BuildSetting(name: $0.key, value: $0.value) }
+            if let config = selectedConfiguration, config.buildSettings == nil {
+                config.updateBuildSettings { (settings) in
+                    if config == self.selectedConfiguration {
+                        self.settingsController.content = settings.map { BuildSetting(name: $0.key, value: $0.value) }
+                    }
+                }
+            }
+        }
+    }
+        
+    @IBAction func configurationSelectionDidChange(_ sender: Any) {
+        guard let wrapper = configurationsController.selectedObjects.first as? ItemWrapper else {
+            return
+        }
+        selectedConfiguration = wrapper.item as? XCDConfiguration
+    }
+   
+    // MARK: Build Settings
+    @IBOutlet var settingsController: NSArrayController!
+    
+    
 }
 
 
@@ -136,6 +179,9 @@ class ViewController: NSViewController {
         return pathNames.reversed().joined(separator: " > ")
     }
     
+    override var description: String {
+        return self.item.name
+    }
 }
 
 @objc protocol PopUpPathElement: NSObjectProtocol {
