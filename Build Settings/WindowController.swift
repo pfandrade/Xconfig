@@ -3,7 +3,7 @@
 //  Build Settings
 //
 //  Created by Paulo F. Andrade on 08/02/2020.
-//  Copyright © 2020 Outer Corner. All rights reserved.
+//  Copyright © 2020 Paulo F. Andrade. All rights reserved.
 //
 
 import Cocoa
